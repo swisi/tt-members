@@ -14,9 +14,19 @@ def create_app(config_class=Config):
 
     from .routes.auth import bp as auth_bp
     from .routes.main import bp as main_bp
+    from .routes.api import bp as api_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
+    app.register_blueprint(api_bp)
+
+    @app.context_processor
+    def inject_platform_links():
+        auth_base_url = app.config.get('AUTH_BASE_URL', 'http://localhost:8085').rstrip('/')
+        return {
+            'auth_base_url': auth_base_url,
+            'auth_dashboard_url': f'{auth_base_url}/',
+        }
 
     with app.app_context():
         db.create_all()

@@ -60,6 +60,7 @@ def profile():
         if not first_name or not last_name:
             flash('Vorname und Nachname sind erforderlich.', 'danger')
         else:
+            already_complete = user.profile_complete
             if not profile:
                 profile = MemberProfile(user_id=user.id, first_name=first_name, last_name=last_name)
                 db.session.add(profile)
@@ -71,6 +72,11 @@ def profile():
             user.last_name = last_name
             user.display_name = f'{first_name} {last_name}'
             db.session.flush()
+            if already_complete:
+                # Profil-Update: kein erneuter Antrag, direkt zurück zum Dashboard
+                db.session.commit()
+                flash('Profil erfolgreich aktualisiert.', 'success')
+                return redirect(url_for('main.index'))
             if _notify_auth_profile_complete(user.auth_user_id):
                 user.profile_complete = True
                 db.session.commit()

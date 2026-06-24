@@ -1,37 +1,144 @@
 {% extends 'base.html' %}
-{% block title %}Profil bearbeiten - Tigers Members{% endblock %}
+{% block title %}{% if current_user.profile_complete %}Profil bearbeiten{% else %}Profil vervollständigen{% endif %} – Tigers Members{% endblock %}
 
 {% block content %}
-<div class="max-w-xl">
-    <div class="mb-6">
-        <h1 class="text-2xl font-bold">Profil vervollständigen</h1>
-        <p class="text-sm text-slate-500 mt-1">Diese Angaben werden als dein Mitgliederprofil gespeichert.</p>
+<div class="max-w-2xl mx-auto">
+
+    <!-- Header -->
+    <div class="mb-8">
+        {% if current_user.profile_complete %}
+        <a href="{{ url_for('main.index') }}" class="inline-flex items-center gap-1.5 text-sm text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 mb-4 transition">
+            <i class="bi bi-arrow-left"></i> Zurück zum Dashboard
+        </a>
+        {% endif %}
+        <div class="flex items-center gap-3 mb-2">
+            <div class="p-2 bg-indigo-100 dark:bg-indigo-900/50 rounded-lg">
+                <i class="bi bi-person-lines-fill text-indigo-600 dark:text-indigo-400 text-xl"></i>
+            </div>
+            <h1 class="text-2xl font-bold">
+                {% if current_user.profile_complete %}Profil bearbeiten{% else %}Profil vervollständigen{% endif %}
+            </h1>
+        </div>
+        <p class="text-sm text-slate-500 dark:text-slate-400 ml-14">
+            {% if current_user.profile_complete %}
+                Hier kannst du deine persönlichen Angaben aktualisieren.
+            {% else %}
+                Bitte fülle alle Pflichtfelder aus und reiche deinen Mitgliederantrag ein.
+            {% endif %}
+        </p>
     </div>
 
-    <form method="POST" class="bg-white border border-slate-200 rounded-lg shadow-sm p-6 space-y-4">
-        <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1">Vorname *</label>
-            <input name="first_name" value="{{ initial_first_name }}" required
-                class="block w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+    <!-- Progress Indicator (nur bei erstem Antrag) -->
+    {% if not current_user.profile_complete %}
+    <div class="mb-6 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 flex items-center gap-4 shadow-sm">
+        <div class="flex-1">
+            <div class="flex justify-between text-xs text-slate-500 dark:text-slate-400 mb-1">
+                <span>Fortschritt</span>
+                <span id="progressLabel">0 / 2 Pflichtfelder</span>
+            </div>
+            <div class="h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                <div id="progressBar" class="h-full bg-indigo-500 rounded-full transition-all duration-300" style="width: 0%"></div>
+            </div>
         </div>
-        <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1">Nachname *</label>
-            <input name="last_name" value="{{ initial_last_name }}" required
-                class="block w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        <div id="progressIcon" class="w-8 h-8 rounded-full border-2 border-slate-200 dark:border-slate-600 flex items-center justify-center text-slate-400 dark:text-slate-500 transition-all duration-300">
+            <i class="bi bi-circle text-sm"></i>
         </div>
-        <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1">Telefon</label>
-            <input name="phone" value="{{ profile.phone if profile else '' }}"
-                class="block w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+    </div>
+    {% endif %}
+
+    <!-- Form -->
+    <form method="POST" id="profileForm" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm divide-y divide-slate-100 dark:divide-slate-700">
+
+        <div class="p-6 space-y-5">
+            <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Persönliche Daten</h2>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                        Vorname <span class="text-red-500">*</span>
+                    </label>
+                    <input id="first_name" name="first_name" value="{{ initial_first_name }}" required
+                        placeholder="z. B. Max"
+                        class="required-field block w-full px-3 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-50 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                        Nachname <span class="text-red-500">*</span>
+                    </label>
+                    <input id="last_name" name="last_name" value="{{ initial_last_name }}" required
+                        placeholder="z. B. Mustermann"
+                        class="required-field block w-full px-3 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-50 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Telefon</label>
+                <input name="phone" value="{{ profile.phone if profile else '' }}"
+                    placeholder="z. B. +41 79 123 45 67"
+                    class="block w-full px-3 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-50 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Bemerkungen</label>
+                <textarea name="notes" rows="3"
+                    placeholder="Optionale Hinweise..."
+                    class="block w-full px-3 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-50 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition resize-none">{{ profile.notes if profile else '' }}</textarea>
+            </div>
         </div>
-        <div>
-            <label class="block text-sm font-medium text-slate-700 mb-1">Notizen</label>
-            <textarea name="notes" rows="4"
-                class="block w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">{{ profile.notes if profile else '' }}</textarea>
+
+        <div class="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 rounded-b-xl flex items-center justify-between gap-4">
+            <p class="text-xs text-slate-400 dark:text-slate-500">
+                <i class="bi bi-info-circle mr-1"></i>
+                Felder mit <span class="text-red-500">*</span> sind Pflichtfelder
+            </p>
+            <div class="flex items-center gap-2">
+                {% if current_user.profile_complete %}
+                <a href="{{ url_for('main.index') }}"
+                    class="inline-flex items-center gap-2 px-5 py-2.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 text-sm font-semibold rounded-lg transition">
+                    <i class="bi bi-x-lg"></i> Abbrechen
+                </a>
+                <button type="submit"
+                    class="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg transition">
+                    <i class="bi bi-floppy"></i> Speichern
+                </button>
+                {% else %}
+                <button id="submitBtn" type="submit"
+                    class="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg transition">
+                    <i class="bi bi-send-check"></i> Antrag einreichen
+                </button>
+                {% endif %}
+            </div>
         </div>
-        <button class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700">
-            <i class="bi bi-send-check"></i>Antrag einreichen
-        </button>
     </form>
 </div>
+
+{% if not current_user.profile_complete %}
+<script>
+    const requiredFields = document.querySelectorAll('.required-field');
+    const progressBar = document.getElementById('progressBar');
+    const progressLabel = document.getElementById('progressLabel');
+    const progressIcon = document.getElementById('progressIcon');
+    const total = requiredFields.length;
+
+    function updateProgress() {
+        let filled = 0;
+        requiredFields.forEach(f => { if (f.value.trim()) filled++; });
+        const pct = total > 0 ? Math.round(filled / total * 100) : 0;
+        progressBar.style.width = pct + '%';
+        progressLabel.textContent = filled + ' / ' + total + ' Pflichtfelder';
+        if (filled === total) {
+            progressBar.classList.replace('bg-indigo-500', 'bg-green-500');
+            progressIcon.className = 'w-8 h-8 rounded-full border-2 border-green-500 bg-green-50 dark:bg-green-900/30 flex items-center justify-center text-green-600 dark:text-green-400 transition-all duration-300';
+            progressIcon.innerHTML = '<i class="bi bi-check2 text-sm font-bold"></i>';
+        } else {
+            progressBar.classList.replace('bg-green-500', 'bg-indigo-500');
+            progressIcon.className = 'w-8 h-8 rounded-full border-2 border-slate-200 dark:border-slate-600 flex items-center justify-center text-slate-400 dark:text-slate-500 transition-all duration-300';
+            progressIcon.innerHTML = '<i class="bi bi-circle text-sm"></i>';
+        }
+    }
+
+    requiredFields.forEach(f => f.addEventListener('input', updateProgress));
+    updateProgress();
+</script>
+{% endif %}
 {% endblock %}

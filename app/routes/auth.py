@@ -29,11 +29,15 @@ def login():
     return redirect(get_auth_login_url(request.args.get('next')))
 
 
+def get_auth_logout_url():
+    auth_base_url = current_app.config.get('AUTH_BASE_URL', 'http://localhost:8085').rstrip('/')
+    return f"{auth_base_url}/logout"
+
+
 @bp.route('/logout', methods=['POST'])
 def logout():
     session.clear()
-    flash('Sie wurden abgemeldet.', 'info')
-    return redirect(get_auth_login_url())
+    return redirect(get_auth_logout_url())
 
 
 @bp.route('/auth/sso')
@@ -66,8 +70,13 @@ def sso_login():
 
     user = User.query.filter_by(auth_user_id=auth_user_id).first()
     if not user:
-        user = User(auth_user_id=auth_user_id, username=username)
-        db.session.add(user)
+        # Fallback: username may already exist with a stale auth_user_id (e.g. after re-registration)
+        user = User.query.filter_by(username=username).first()
+        if user:
+            user.auth_user_id = auth_user_id
+        else:
+            user = User(auth_user_id=auth_user_id, username=username)
+            db.session.add(user)
 
     user.username = username
     user.first_name = payload.get('first_name')
