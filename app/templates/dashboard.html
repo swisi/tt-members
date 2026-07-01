@@ -56,7 +56,7 @@
         <div class="p-6">
             {% set memberships = current_user.claims_json.get('memberships', []) %}
             {% set pending_memberships = current_user.claims_json.get('pending_memberships', []) %}
-            {% set role_labels = {'player': 'Spieler', 'coach': 'Coach', 'head_coach': 'Head Coach', 'team_manager': 'Team-Manager'} %}
+            {% set role_labels = {'player': 'Spieler', 'coach': 'Coach', 'head_coach': 'Head Coach', 'team_manager': 'Team-Manager', 'team_betreuer': 'Team-Betreuer'} %}
             <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Aktive Mitgliedschaften gelten in den Apps sofort. Beantragte Rollen sind sichtbar, aber noch nicht wirksam.</p>
             {% if memberships %}
             <div class="space-y-2">
@@ -85,7 +85,12 @@
             </div>
             {% endif %}
 
-        {% set manager_memberships = memberships | selectattr('member_role', 'equalto', 'team_manager') | list %}
+        {% set manager_memberships = [] %}
+        {% for membership in memberships %}
+            {% if membership.member_role in ['team_manager', 'team_betreuer', 'head_coach'] %}
+                {% set _ = manager_memberships.append(membership) %}
+            {% endif %}
+        {% endfor %}
         {% if current_user.platform_role == 'admin' or manager_memberships %}
             <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">
                 <div class="rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 px-3 py-2.5 text-sm text-blue-800 dark:text-blue-300">

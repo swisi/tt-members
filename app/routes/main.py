@@ -338,7 +338,7 @@ def _managed_team_codes(user):
     team_codes = {
         (membership.get('team_code') or '').strip().upper()
         for membership in memberships
-        if membership.get('member_role') in {'team_manager', 'head_coach'} and membership.get('team_code')
+        if membership.get('member_role') in {'team_manager', 'team_betreuer', 'head_coach'} and membership.get('team_code')
     }
     return sorted(code for code in team_codes if code)
 
@@ -361,6 +361,7 @@ def _role_labels():
         'coach': 'Coach',
         'head_coach': 'Head Coach',
         'team_manager': 'Team-Manager',
+        'team_betreuer': 'Team-Betreuer',
     }
 
 

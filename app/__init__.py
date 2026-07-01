@@ -47,7 +47,7 @@ def create_app(config_class=Config):
         if not managed_team:
             memberships = normalize_memberships(claims.get('memberships'))
             managed_team = any(
-                membership.get('member_role') in {'team_manager', 'head_coach'}
+                membership.get('member_role') in {'team_manager', 'team_betreuer', 'head_coach'}
                 for membership in memberships
             )
         if not managed_team:

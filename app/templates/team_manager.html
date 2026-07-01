@@ -64,13 +64,13 @@
                     <div class="flex flex-wrap gap-1">
                         {% for req in user.requested_memberships %}
                         <span class="px-2 py-0.5 text-xs font-medium bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 rounded-full">
-                            {{ req.team.name or req.team.code or req.team.id }}: {{ {'player': 'Spieler', 'coach': 'Coach', 'head_coach': 'Head Coach', 'team_manager': 'Team-Manager'}.get(req.member_role, req.member_role) }}
+                            {{ req.team.name or req.team.code or req.team.id }}: {{ {'player': 'Spieler', 'coach': 'Coach', 'head_coach': 'Head Coach', 'team_manager': 'Team-Manager', 'team_betreuer': 'Team-Betreuer'}.get(req.member_role, req.member_role) }}
                         </span>
                         {% endfor %}
                     </div>
                     {% else %}
                     <span class="px-2 py-0.5 text-xs font-medium bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 rounded-full">
-                        {{ user.requested_team_name or user.requested_team_code }}: {{ {'player': 'Spieler', 'coach': 'Coach', 'head_coach': 'Head Coach', 'team_manager': 'Team-Manager'}.get(user.requested_member_role, user.requested_member_role) }}
+                        {{ user.requested_team_name or user.requested_team_code }}: {{ {'player': 'Spieler', 'coach': 'Coach', 'head_coach': 'Head Coach', 'team_manager': 'Team-Manager', 'team_betreuer': 'Team-Betreuer'}.get(user.requested_member_role, user.requested_member_role) }}
                     </span>
                     {% endif %}
                 </td>
